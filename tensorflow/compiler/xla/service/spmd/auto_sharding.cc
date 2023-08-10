@@ -1736,6 +1736,15 @@ std::tuple<std::vector<int64_t>, std::vector<int64_t>, double> CallSolver(
   std::vector<int64_t> s_val, e_val;
   double objective;
 
+  std::vector<int> elementwise_np;
+  std::vector<int> param_np;
+
+  for (int i = 0; i < leaf_strategies.size(); ++i) {
+    StrategyVector* strategy = leaf_strategies[i];
+    if (instructions[strategy->instruction_id]->opcode() == HloOpcode::kParameter) param_np.push_back(strategy->id);
+    if (instructions[strategy->instruction_id]->IsElementwise()) elementwise_np.push_back(strategy->id);
+  }
+
   PyGILState_STATE gstate = PyGILState_Ensure();
   {
     py::object submodule =
@@ -1753,7 +1762,9 @@ std::tuple<std::vector<int64_t>, std::vector<int64_t>, double> CallSolver(
         py::array(d_np.size(), d_np.data()),
         py::array(m_np.size(), m_np.data()),
         py::array(r_np.size(), r_np.data()),
-        py::array(v_np.size(), v_np.data()));
+        py::array(v_np.size(), v_np.data()),
+        py::array(elementwise_np.size(), elementwise_np.data()),
+        py::array(param_np.size(), param_np.data()));
     if (ret.is_none()) {
       PyGILState_Release(gstate);
       exit(-1);
