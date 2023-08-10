@@ -20,6 +20,7 @@ void AppendNewStrategy(const HloInstruction* ins, const std::string& name,
                              input_specs[i], cluster_env));
   }
 
+  compute_cost = cluster_env.DotCost(ins->operand(0)->shape(), ins->operand(1)->shape(), ins->dot_dimension_numbers()) / cluster_env.total_devices;
   strategies->leaf_vector.push_back(ShardingStrategy({
       name,
       output_spec,
